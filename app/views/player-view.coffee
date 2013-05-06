@@ -44,6 +44,9 @@ module.exports = class PlayerView extends View
       height: '390'
       width: '640'
       videoId: block.youtubeVideoId()
+      playerVars:
+        controls: 0
+        showinfo: 0
       events: 
         onReady: @playYoutube
         onStateChange: @onYouTubeStateChange

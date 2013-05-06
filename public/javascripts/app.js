@@ -832,6 +832,10 @@ window.require.register("views/player-view", function(exports, require, module) 
         height: '390',
         width: '640',
         videoId: block.youtubeVideoId(),
+        playerVars: {
+          controls: 0,
+          showinfo: 0
+        },
         events: {
           onReady: this.playYoutube,
           onStateChange: this.onYouTubeStateChange
