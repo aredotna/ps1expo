@@ -14,8 +14,8 @@ module.exports = class PlayerView extends View
 
     window.onYouTubeIframeAPIReady = => @loadPlayer()
 
-    # @subscribeEvent 'video:prev', @prevVideo
-    # @subscribeEvent 'video:next', @nextVideo
+    @subscribeEvent 'video:prev', @prevVideo
+    @subscribeEvent 'video:next', @nextVideo
 
   attach: ->
     super
@@ -70,7 +70,13 @@ module.exports = class PlayerView extends View
     @$('#video-player').html ''
     @nextVideo()
 
+  destroyPlayers: ->
+    @v_player = null
+    @yt_player?.destroy()
+    @$('#video-player').html ''
+
   nextVideo: ->
+    @destroyPlayers()
     if @currentIndex is (@collection.length - 1)
       @currentIndex = 0 
     else 
@@ -78,6 +84,7 @@ module.exports = class PlayerView extends View
     @loadPlayer()
 
   prevVideo: ->
+    @destroyPlayers()
     if @currentIndex is 0
       @currentIndex = @collection.length
     else 

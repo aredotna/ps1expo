@@ -790,9 +790,11 @@ window.require.register("views/player-view", function(exports, require, module) 
       var _this = this;
 
       PlayerView.__super__.initialize.apply(this, arguments);
-      return window.onYouTubeIframeAPIReady = function() {
+      window.onYouTubeIframeAPIReady = function() {
         return _this.loadPlayer();
       };
+      this.subscribeEvent('video:prev', this.prevVideo);
+      return this.subscribeEvent('video:next', this.nextVideo);
     };
 
     PlayerView.prototype.attach = function() {
@@ -869,7 +871,18 @@ window.require.register("views/player-view", function(exports, require, module) 
       return this.nextVideo();
     };
 
+    PlayerView.prototype.destroyPlayers = function() {
+      var _ref1;
+
+      this.v_player = null;
+      if ((_ref1 = this.yt_player) != null) {
+        _ref1.destroy();
+      }
+      return this.$('#video-player').html('');
+    };
+
     PlayerView.prototype.nextVideo = function() {
+      this.destroyPlayers();
       if (this.currentIndex === (this.collection.length - 1)) {
         this.currentIndex = 0;
       } else {
@@ -879,6 +892,7 @@ window.require.register("views/player-view", function(exports, require, module) 
     };
 
     PlayerView.prototype.prevVideo = function() {
+      this.destroyPlayers();
       if (this.currentIndex === 0) {
         this.currentIndex = this.collection.length;
       } else {
