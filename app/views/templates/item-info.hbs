@@ -1,13 +1,13 @@
 <div class="infobar">
-  {{if title}}
+  {{#if title}}
     <div class="infobar-title">
       {{title}}
     </div>
   {{/if}}
 
-  {{if description}}
+  {{#if description_html}}
     <div class="infobar-description">
-      {{description}}
+      {{{description_html}}}
     </div>
   {{/if}}
 </div>

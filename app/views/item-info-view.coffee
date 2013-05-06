@@ -5,3 +5,12 @@ module.exports = class ItemInfoView extends View
   autoRender: yes
   className: 'item-info'
   template: template
+
+  initialize: ->
+    super
+
+    @listenTo @model, 'remote:update', @render
+
+  render: ->
+    super
+    console.log 'rendering', @model

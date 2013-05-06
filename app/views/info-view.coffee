@@ -34,5 +34,4 @@ module.exports = class InfoView extends CollectionView
     Chaplin.mediator.publish 'video:next'
     @renderAllItems()
 
-  filterer: (item, index) -> 
-    index is @currentIndex
+  filterer: (item, index) -> index is @currentIndex
