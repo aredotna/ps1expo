@@ -870,12 +870,20 @@ window.require.register("views/player-view", function(exports, require, module) 
     };
 
     PlayerView.prototype.nextVideo = function() {
-      this.currentIndex = this.currentIndex === (this.collection.length - 1) ? 0 : this.currentIndex++;
+      if (this.currentIndex === (this.collection.length - 1)) {
+        this.currentIndex = 0;
+      } else {
+        this.currentIndex++;
+      }
       return this.loadPlayer();
     };
 
     PlayerView.prototype.prevVideo = function() {
-      this.currentIndex = this.currentIndex === (this.collection.length - 1) ? 0 : this.currentIndex++;
+      if (this.currentIndex === 0) {
+        this.currentIndex = this.collection.length;
+      } else {
+        this.currentIndex++;
+      }
       return this.loadPlayer();
     };
 
