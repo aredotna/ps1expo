@@ -10,7 +10,6 @@ module.exports = class Channel extends Model
   initialize: (attributes, options)->
     super
 
-    @subscribeEvent 'channel:loaded', @setUpPusher
     @set('id', attributes.id)
 
   urlRoot: "#{config.api.versionRoot}/channels"
@@ -28,6 +27,7 @@ module.exports = class Channel extends Model
 
   afterSuccess: ->
     @set 'contents', new Blocks(@get('contents'))
+    @setUpPusher()
 
   # 
   # Pusher
@@ -39,7 +39,11 @@ module.exports = class Channel extends Model
     @pusher = Chaplin.mediator.pusher.subscribe "channel-#{config.env}-#{channel.id}"
 
     @listener = new Backpusher @pusher, channel.get('contents')
-    @listener.bind 'remote_update', (model) -> model.trigger 'remote:update'
+    @listener.bind 'remote_create', (model) -> 
+      console.log 'block added', model
+    @listener.bind 'remote_update', (model) -> 
+      console.log 'remote_update', model
+      model.trigger 'remote:update'
     @listener.bind 'remote_destroy', (model) -> channel.get('contents').remove(model)
    
 

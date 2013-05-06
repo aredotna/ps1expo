@@ -1,5 +1,7 @@
 Chaplin = require 'chaplin'
 routes = require 'routes'
+config = require 'config'
+
 
 # The application object.
 module.exports = class Application extends Chaplin.Application
@@ -45,6 +47,7 @@ module.exports = class Application extends Chaplin.Application
     # Add additional application-specific properties and methods
     # e.g. Chaplin.mediator.prop = null
     @mediator = Chaplin.mediator
+    Chaplin.mediator.pusher = new Pusher(config.pusher.key)
     Chaplin.mediator.mainSlug = @mainSlug
 
     # Seal the mediator.
