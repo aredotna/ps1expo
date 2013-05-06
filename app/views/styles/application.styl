@@ -1,7 +1,11 @@
 @import 'nib'
 
+$unit = 20px
+
 *
   box-sizing: border-box
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased
 
 html,
 body,
@@ -16,10 +20,34 @@ iframe,
   color: #fff
   overflow: hidden
 
-#info-container
+body
+  font-family: 'Karla', sans-serif
+  font-size: 16px
+  line-height: 18px
+  text-shadow: 0 0 2px #000
+
+.infobar
   position: fixed
   right: 0
   bottom: 0
   left: 0
-  background: #000
+  padding: ($unit * 2)
+
+.infobar-title
+  font-size: 18px
+  font-weight: bold
+
+.infobar-description
+  margin-top: ($unit / 2)
+  max-width: 500px
+
+.debug-controls
+  position: fixed
+  top: $unit
+  right: $unit
+  font-weight: bold
   // display: none
+
+  & *
+    display: inline
+    cursor: pointer
