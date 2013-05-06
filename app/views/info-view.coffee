@@ -15,15 +15,21 @@ module.exports = class InfoView extends CollectionView
   initialize: ->
     super
 
-    @delegate 'click', '.prev', @prevVideo
-    @delegate 'click', '.next', @nextVideo
+    @delegate 'click', '.prev', @triggerPrev
+    @delegate 'click', '.next', @triggerNext
+
+    @subscribeEvent 'title:prev', @prevVideo
+    @subscribeEvent 'title:next', @nextVideo
+
+  triggerPrev: -> Chaplin.mediator.publish 'video:prev'
+
+  triggerNext: -> Chaplin.mediator.publish 'video:next'
 
   prevVideo: ->
     if @currentIndex is 0
       @currentIndex = @collection.length
     else 
       @currentIndex--
-    Chaplin.mediator.publish 'video:prev'
     @renderAllItems()
 
   nextVideo: ->
@@ -31,7 +37,6 @@ module.exports = class InfoView extends CollectionView
       @currentIndex = 0
     else 
       @currentIndex++
-    Chaplin.mediator.publish 'video:next'
     @renderAllItems()
 
   filterer: (item, index) -> index is @currentIndex

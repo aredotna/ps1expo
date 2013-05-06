@@ -1,6 +1,7 @@
 template = require 'views/templates/player'
 View = require 'views/base/view'
 InfoView = require 'views/info-view'
+Chaplin = require 'chaplin'
 
 module.exports = class PlayerView extends View
   autoRender: yes
@@ -40,12 +41,12 @@ module.exports = class PlayerView extends View
       return true
 
   displayYoutubePlayer: (block) ->
+    console.log 'displayYoutubePlayer', block.youtubeVideoId()
     @yt_player = new YT.Player 'video-player',
       height: '390'
       width: '640'
       videoId: block.youtubeVideoId()
       playerVars:
-        controls: 0
         showinfo: 0
       events: 
         onReady: @playYoutube
@@ -55,7 +56,6 @@ module.exports = class PlayerView extends View
 
   onYouTubeStateChange: (e) =>
     if e.data is YT.PlayerState.ENDED
-      @yt_player.destroy()
       @nextVideo()
 
   displayVimeoPlayer: (block)->
@@ -63,15 +63,10 @@ module.exports = class PlayerView extends View
     @$('#video-player').html html
     iframe = @$('#video-player iframe')[0]
     @v_player = $f(iframe)
-    @v_player.addEvent 'finish', @onVimeoFinish
+    @v_player.addEvent 'finish', @nextVideo
     @playVimeo()
 
   playVimeo: -> @v_player.api 'play'
-
-  onVimeoFinish: ->
-    @v_player = null
-    @$('#video-player').html ''
-    @nextVideo()
 
   destroyPlayers: ->
     @v_player = null
@@ -86,6 +81,8 @@ module.exports = class PlayerView extends View
       @currentIndex++
     @loadPlayer()
 
+    Chaplin.mediator.publish 'title:next'
+
   prevVideo: ->
     @destroyPlayers()
     if @currentIndex is 0
@@ -93,5 +90,7 @@ module.exports = class PlayerView extends View
     else 
       @currentIndex++
     @loadPlayer()
+
+    Chaplin.mediator.publish 'title:prev'
 
 
