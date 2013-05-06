@@ -71,11 +71,17 @@ module.exports = class PlayerView extends View
     @nextVideo()
 
   nextVideo: ->
-    @currentIndex = if @currentIndex is (@collection.length - 1) then 0 else @currentIndex++
+    if @currentIndex is (@collection.length - 1)
+      @currentIndex = 0 
+    else 
+      @currentIndex++
     @loadPlayer()
 
   prevVideo: ->
-    @currentIndex = if @currentIndex is (@collection.length - 1) then 0 else @currentIndex++
+    if @currentIndex is 0
+      @currentIndex = @collection.length
+    else 
+      @currentIndex++
     @loadPlayer()
 
 
