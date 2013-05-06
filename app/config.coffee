@@ -3,7 +3,7 @@ config =
   pusher: {}
   errbit: {}
   
-production = no # MUST BE YES/NO
+production = yes # MUST BE YES/NO
 staging = false # MUST BE TRUE/FALSE
 
 environment =

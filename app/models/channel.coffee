@@ -26,10 +26,6 @@ module.exports = class Channel extends Model
     options.url = @url(method)
     super
 
-  parse: (data) ->
-    console.log 'parse', data
-    return data 
-
   afterSuccess: ->
     @set 'contents', new Blocks(@get('contents'))
 
@@ -41,7 +37,6 @@ module.exports = class Channel extends Model
     channel = this
     
     @pusher = Chaplin.mediator.pusher.subscribe "channel-#{config.env}-#{channel.id}"
-    @pusher.bind 'new_comment', (comment) -> channel.get('contents').addComment comment      
 
     @listener = new Backpusher @pusher, channel.get('contents')
     @listener.bind 'remote_update', (model) -> model.trigger 'remote:update'

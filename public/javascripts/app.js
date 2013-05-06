@@ -133,7 +133,7 @@ window.require.register("config", function(exports, require, module) {
     errbit: {}
   };
 
-  production = false;
+  production = true;
 
   staging = false;
 
@@ -377,6 +377,31 @@ window.require.register("models/block", function(exports, require, module) {
       return _ref;
     }
 
+    Block.prototype.isVimeo = function() {
+      return this.get('embed').html.indexOf('vimeo') !== -1;
+    };
+
+    Block.prototype.isYouTube = function() {
+      return this.get('embed').html.indexOf('youtube') !== -1;
+    };
+
+    Block.prototype.youtubeVideoId = function() {
+      var reg;
+
+      reg = new RegExp('(?:https?://)?(?:www\\.)?(?:youtu\\.be/|youtube\\.com(?:/embed/|/v/|/watch\\?v=))([\\w-]{10,12})', 'g');
+      return reg.exec(this.get('embed').html)[1];
+    };
+
+    Block.prototype.vimeoEmbed = function() {
+      var html, regEx;
+
+      html = this.get('embed').html;
+      regEx = /(src)=["']([^"']*)["']/gi;
+      return html.replace(regEx, function(all, type, value) {
+        return "src=\"" + value + "?api=1\"";
+      });
+    };
+
     return Block;
 
   })(Model);
@@ -404,6 +429,10 @@ window.require.register("models/blocks", function(exports, require, module) {
     }
 
     Blocks.prototype.model = Block;
+
+    Blocks.prototype.comparator = function(model) {
+      return model.get('position');
+    };
 
     return Blocks;
 
@@ -463,11 +492,6 @@ window.require.register("models/channel", function(exports, require, module) {
       return Channel.__super__.sync.apply(this, arguments);
     };
 
-    Channel.prototype.parse = function(data) {
-      console.log('parse', data);
-      return data;
-    };
-
     Channel.prototype.afterSuccess = function() {
       return this.set('contents', new Blocks(this.get('contents')));
     };
@@ -477,9 +501,6 @@ window.require.register("models/channel", function(exports, require, module) {
 
       channel = this;
       this.pusher = Chaplin.mediator.pusher.subscribe("channel-" + config.env + "-" + channel.id);
-      this.pusher.bind('new_comment', function(comment) {
-        return channel.get('contents').addComment(comment);
-      });
       this.listener = new Backpusher(this.pusher, channel.get('contents'));
       this.listener.bind('remote_update', function(model) {
         return model.trigger('remote:update');
@@ -623,7 +644,13 @@ window.require.register("views/player-item-view", function(exports, require, mod
     };
 
     PlayerItemView.prototype.displayVideo = function() {
-      return this.$('.video').html(this.model.get('embed').html);
+      if (this.model.isYouTube()) {
+        return this.displayYouTube();
+      }
+    };
+
+    PlayerItemView.prototype.displayYouTube = function() {
+      return console.log('displayYouTube');
     };
 
     return PlayerItemView;
@@ -632,21 +659,22 @@ window.require.register("views/player-item-view", function(exports, require, mod
   
 });
 window.require.register("views/player-view", function(exports, require, module) {
-  var CollectionView, PlayerItemView, PlayerView, template, _ref,
+  var InfoView, PlayerView, View, template, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   template = require('views/templates/player');
 
-  CollectionView = require('views/base/collection-view');
+  View = require('views/base/view');
 
-  PlayerItemView = require('views/player-item-view');
+  InfoView = require('views/info-view');
 
   module.exports = PlayerView = (function(_super) {
     __extends(PlayerView, _super);
 
     function PlayerView() {
-      _ref = PlayerView.__super__.constructor.apply(this, arguments);
+      this.onYouTubeStateChange = __bind(this.onYouTubeStateChange, this);    _ref = PlayerView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -656,30 +684,99 @@ window.require.register("views/player-view", function(exports, require, module) 
 
     PlayerView.prototype.region = 'player';
 
-    PlayerView.prototype.itemView = PlayerItemView;
-
     PlayerView.prototype.template = template;
 
     PlayerView.prototype.currentIndex = 0;
 
     PlayerView.prototype.initialize = function() {
+      var _this = this;
+
       PlayerView.__super__.initialize.apply(this, arguments);
-      return this.listenTo(this, 'visibilityChange', this.showVideos);
+      return window.onYouTubeIframeAPIReady = function() {
+        return _this.loadPlayer();
+      };
     };
 
-    PlayerView.prototype.filterer = function(item, index) {
-      return index === this.currentIndex;
+    PlayerView.prototype.attach = function() {
+      PlayerView.__super__.attach.apply(this, arguments);
+      return this.loadVideoScripts();
     };
 
-    PlayerView.prototype.showVideos = function(visible) {
-      return _.each(visible, function(item) {
-        return item.trigger('show:video');
+    PlayerView.prototype.loadVideoScripts = function() {
+      return $.getScript('//www.youtube.com/iframe_api');
+    };
+
+    PlayerView.prototype.loadPlayer = function() {
+      var block;
+
+      block = this.collection.at(this.currentIndex);
+      if (block.isYouTube()) {
+        this.displayYoutubePlayer(block);
+        return true;
+      }
+      if (block.isVimeo()) {
+        this.displayVimeoPlayer(block);
+        return true;
+      }
+    };
+
+    PlayerView.prototype.displayYoutubePlayer = function(block) {
+      return this.yt_player = new YT.Player('video-player', {
+        height: '390',
+        width: '640',
+        videoId: block.youtubeVideoId(),
+        events: {
+          onReady: this.playYoutube,
+          onStateChange: this.onYouTubeStateChange
+        }
       });
+    };
+
+    PlayerView.prototype.playYoutube = function(e) {
+      return e.target.playVideo();
+    };
+
+    PlayerView.prototype.onYouTubeStateChange = function(e) {
+      if (e.data === YT.PlayerState.ENDED) {
+        this.yt_player.destroy();
+        return this.nextVideo();
+      }
+    };
+
+    PlayerView.prototype.displayVimeoPlayer = function(block) {
+      var html, iframe;
+
+      html = block.vimeoEmbed();
+      this.$('#video-player').html(html);
+      iframe = this.$('#video-player iframe')[0];
+      this.v_player = $f(iframe);
+      this.v_player.addEvent('finish', this.onVimeoFinish);
+      return this.playVimeo();
+    };
+
+    PlayerView.prototype.playVimeo = function() {
+      return this.v_player.api('play');
+    };
+
+    PlayerView.prototype.onVimeoFinish = function() {
+      this.v_player = null;
+      this.$('#video-player').html('');
+      return this.nextVideo();
+    };
+
+    PlayerView.prototype.nextVideo = function() {
+      this.currentIndex = this.currentIndex === (this.collection.length - 1) ? 0 : this.currentIndex++;
+      return this.loadPlayer();
+    };
+
+    PlayerView.prototype.prevVideo = function() {
+      this.currentIndex = this.currentIndex === 0 ? this.collection.length : this.currentIndex--;
+      return this.loadPlayer();
     };
 
     return PlayerView;
 
-  })(CollectionView);
+  })(View);
   
 });
 window.require.register("views/site-view", function(exports, require, module) {
@@ -729,12 +826,17 @@ window.require.register("views/templates/player-item", function(exports, require
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     this.compilerInfo = [2,'>= 1.0.0-rc.3'];
   helpers = helpers || Handlebars.helpers; data = data || {};
-    var stack1, stack2, options, self=this, helperMissing=helpers.helperMissing;
+    var stack1, stack2, options, functionType="function", escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
 
   function program1(depth0,data) {
     
-    
-    return "\n  <div class=\"video\">\n  \n  </div>\n";
+    var buffer = "", stack1;
+    buffer += "\n  <div id=\"played_";
+    if (stack1 = helpers.id) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+    else { stack1 = depth0.id; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+    buffer += escapeExpression(stack1)
+      + "\" class=\"video\">\n  \n  </div>\n";
+    return buffer;
     }
 
     options = {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data};
@@ -750,7 +852,7 @@ window.require.register("views/templates/player", function(exports, require, mod
     
 
 
-    return "<div></div>";
+    return "<div id=\"video-player\"></div>";
     });
 });
 window.require.register("views/templates/site", function(exports, require, module) {
