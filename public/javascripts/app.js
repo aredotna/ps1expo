@@ -617,6 +617,104 @@ window.require.register("views/header-view", function(exports, require, module) 
   })(View);
   
 });
+window.require.register("views/info-view", function(exports, require, module) {
+  var Chaplin, CollectionView, InfoView, ItemInfoView, template, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  template = require('views/templates/info');
+
+  CollectionView = require('views/base/collection-view');
+
+  ItemInfoView = require('views/item-info-view');
+
+  Chaplin = require('chaplin');
+
+  module.exports = InfoView = (function(_super) {
+    __extends(InfoView, _super);
+
+    function InfoView() {
+      _ref = InfoView.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    InfoView.prototype.autoRender = true;
+
+    InfoView.prototype.className = 'info';
+
+    InfoView.prototype.region = 'info';
+
+    InfoView.prototype.listSelector = '.current-video-container';
+
+    InfoView.prototype.template = template;
+
+    InfoView.prototype.currentIndex = 0;
+
+    InfoView.prototype.itemView = ItemInfoView;
+
+    InfoView.prototype.initialize = function() {
+      InfoView.__super__.initialize.apply(this, arguments);
+      this.delegate('click', '.prev', this.prevVideo);
+      return this.delegate('click', '.next', this.nextVideo);
+    };
+
+    InfoView.prototype.prevVideo = function() {
+      if (this.currentIndex === 0) {
+        this.currentIndex = this.collection.length;
+      } else {
+        this.currentIndex--;
+      }
+      Chaplin.mediator.publish('video:prev');
+      return this.renderAllItems();
+    };
+
+    InfoView.prototype.nextVideo = function() {
+      if (this.currentIndex === (this.collection.length - 1)) {
+        this.currentIndex = 0;
+      } else {
+        this.currentIndex++;
+      }
+      Chaplin.mediator.publish('video:next');
+      return this.renderAllItems();
+    };
+
+    InfoView.prototype.filterer = function(item, index) {
+      return index === this.currentIndex;
+    };
+
+    return InfoView;
+
+  })(CollectionView);
+  
+});
+window.require.register("views/item-info-view", function(exports, require, module) {
+  var ItemInfoView, View, template, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  template = require('views/templates/item-info');
+
+  View = require('views/base/view');
+
+  module.exports = ItemInfoView = (function(_super) {
+    __extends(ItemInfoView, _super);
+
+    function ItemInfoView() {
+      _ref = ItemInfoView.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    ItemInfoView.prototype.autoRender = true;
+
+    ItemInfoView.prototype.className = 'item-info';
+
+    ItemInfoView.prototype.template = template;
+
+    return ItemInfoView;
+
+  })(View);
+  
+});
 window.require.register("views/player-item-view", function(exports, require, module) {
   var PlayerItemView, View, template, _ref,
     __hasProp = {}.hasOwnProperty,
@@ -699,11 +797,18 @@ window.require.register("views/player-view", function(exports, require, module) 
 
     PlayerView.prototype.attach = function() {
       PlayerView.__super__.attach.apply(this, arguments);
-      return this.loadVideoScripts();
+      this.loadVideoScripts();
+      return this.renderSubViews();
     };
 
     PlayerView.prototype.loadVideoScripts = function() {
       return $.getScript('//www.youtube.com/iframe_api');
+    };
+
+    PlayerView.prototype.renderSubViews = function() {
+      return this.subview('info', new InfoView({
+        collection: this.collection
+      }));
     };
 
     PlayerView.prototype.loadPlayer = function() {
@@ -770,7 +875,7 @@ window.require.register("views/player-view", function(exports, require, module) 
     };
 
     PlayerView.prototype.prevVideo = function() {
-      this.currentIndex = this.currentIndex === 0 ? this.collection.length : this.currentIndex--;
+      this.currentIndex = this.currentIndex === (this.collection.length - 1) ? 0 : this.currentIndex++;
       return this.loadPlayer();
     };
 
@@ -822,6 +927,28 @@ window.require.register("views/templates/header", function(exports, require, mod
     return "HEADER";
     });
 });
+window.require.register("views/templates/info", function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [2,'>= 1.0.0-rc.3'];
+  helpers = helpers || Handlebars.helpers; data = data || {};
+    
+
+
+    return "<a class=\"prev\"> prev </a>\n<div class=\"current-video-container\"></div>\n<a class=\"next\"> next </a>";
+    });
+});
+window.require.register("views/templates/item-info", function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [2,'>= 1.0.0-rc.3'];
+  helpers = helpers || Handlebars.helpers; data = data || {};
+    var stack1, functionType="function", escapeExpression=this.escapeExpression;
+
+
+    if (stack1 = helpers.title) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+    else { stack1 = depth0.title; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+    return escapeExpression(stack1);
+    });
+});
 window.require.register("views/templates/player-item", function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     this.compilerInfo = [2,'>= 1.0.0-rc.3'];
@@ -862,6 +989,6 @@ window.require.register("views/templates/site", function(exports, require, modul
     
 
 
-    return "<div id=\"player-container\"></div>";
+    return "<div id=\"player-container\"></div>\n<div id=\"info-container\"></div>";
     });
 });
