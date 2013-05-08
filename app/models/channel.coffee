@@ -1,7 +1,7 @@
-Model         = require 'models/base/model'
-Blocks        = require 'models/blocks'
-Chaplin       = require 'chaplin'
-config        = require 'config'
+Model   = require 'models/base/model'
+Blocks  = require 'models/blocks'
+Chaplin = require 'chaplin'
+config  = require 'config'
 
 module.exports = class Channel extends Model
   collection: Blocks
@@ -26,8 +26,13 @@ module.exports = class Channel extends Model
     super
 
   afterSuccess: ->
-    @set 'contents', new Blocks(@get('contents'))
+    @set 'contents', new Blocks(@filterContents())
     @setUpPusher()
+
+  filterContents: ->
+    _.filter @get('contents'), (block) ->
+      if block.class is "Media"
+        block.source.provider.name is "YouTube" or "Vimeo"
 
   # 
   # Pusher
