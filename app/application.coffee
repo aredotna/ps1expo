@@ -8,7 +8,7 @@ module.exports = class Application extends Chaplin.Application
   # Set your application name here so the document title is set to
   # “Controller title – Site title” (see Chaplin.Layout#adjustTitle)
   title: 'PS1 Expo'
-  mainSlug: "skate-video-parts-worth-watching"
+  mainSlug: "expo-trailers"
 
   initialize: ->
     super
