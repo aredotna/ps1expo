@@ -2,4 +2,4 @@ Application = require 'application'
 
 # Initialize the application on DOM ready event.
 $ ->
-  (new Application).initialize()
+  window.app = (new Application).initialize()

@@ -60,6 +60,7 @@ module.exports = class PlayerView extends View
       @nextVideo()
 
   displayVimeoPlayer: (block)->
+    console.log 'displayVimeoPlayer', block.vimeoEmbed()
     html = block.vimeoEmbed()
     @$('#video-player').html html
     iframe = @$('#video-player iframe')[0]
@@ -67,7 +68,9 @@ module.exports = class PlayerView extends View
     @v_player.addEvent 'finish', @nextVideo
     @playVimeo()
 
-  playVimeo: -> @v_player.api 'play'
+  playVimeo: -> 
+    console.log 'play', @v_player
+    @v_player.api 'play'
 
   destroyPlayers: ->
     @v_player = null
