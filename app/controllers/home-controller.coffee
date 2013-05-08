@@ -13,3 +13,14 @@ module.exports = class HomeController extends Controller
       success: =>
         @model.afterSuccess()
         @view = new PlayerView collection: @model.get('contents')
+
+  show: (params)->
+    console.log 'id', params.id
+    @model = new Channel
+      id: params.id
+
+    @model.fetch
+      success: =>
+        @model.afterSuccess()
+        @view = new PlayerView collection: @model.get('contents')
+
