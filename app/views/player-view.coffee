@@ -64,23 +64,24 @@ module.exports = class PlayerView extends View
     html = block.vimeoEmbed()
     @$('#video-player').html html
     iframe = @$('#video-player iframe')[0]
-    console.log 'iframe', iframe
+    $(iframe).attr('id', "vimeo-#{block.id}")
     @v_player = $f(iframe)
-    @v_player.addEvent 'finish', @nextVideo
+    @v_player.addEvent 'ready', @setUpVimeo
+  
+  setUpVimeo: =>
     @playVimeo()
+    @v_player.addEvent 'finish', @nextVideo
 
-  playVimeo: -> 
-    console.log 'play', @v_player
-    @v_player.api 'play'
+  playVimeo: => 
+    @v_player.api('play')
 
   destroyPlayers: ->
     @v_player = null
-    console.log '@yt_player', @yt_player
     @yt_player?.destroy()
     @yt_player = null
     @$('#video-player').html ''
 
-  nextVideo: ->
+  nextVideo: =>
     @destroyPlayers()
     if @currentIndex is (@collection.length - 1)
       @currentIndex = 0 
