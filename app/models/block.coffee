@@ -15,4 +15,4 @@ module.exports = class Block extends Model
   vimeoEmbed: ->
     html = @get('embed').html
     regEx = /(src)=["']([^"']*)["']/gi
-    html.replace regEx, (all, type, value) -> "src=\"#{value}?api=1\""
+    html.replace regEx, (all, type, value) -> "src=\"#{value}?js_api=1\""

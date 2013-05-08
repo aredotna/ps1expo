@@ -64,6 +64,7 @@ module.exports = class PlayerView extends View
     html = block.vimeoEmbed()
     @$('#video-player').html html
     iframe = @$('#video-player iframe')[0]
+    console.log 'iframe', iframe
     @v_player = $f(iframe)
     @v_player.addEvent 'finish', @nextVideo
     @playVimeo()
@@ -74,7 +75,9 @@ module.exports = class PlayerView extends View
 
   destroyPlayers: ->
     @v_player = null
+    console.log '@yt_player', @yt_player
     @yt_player?.destroy()
+    @yt_player = null
     @$('#video-player').html ''
 
   nextVideo: ->
