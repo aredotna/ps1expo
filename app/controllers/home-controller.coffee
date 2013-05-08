@@ -5,7 +5,6 @@ PlayerView = require 'views/player-view'
 
 module.exports = class HomeController extends Controller
   index: ->
-    console.log 'home index'
     @model = new Channel
       id: Chaplin.mediator.mainSlug
 
@@ -15,7 +14,6 @@ module.exports = class HomeController extends Controller
         @view = new PlayerView collection: @model.get('contents')
 
   show: (params)->
-    console.log 'id', params.id
     @model = new Channel
       id: params.id
 

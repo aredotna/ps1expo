@@ -13,4 +13,3 @@ module.exports = class ItemInfoView extends View
 
   render: ->
     super
-    console.log 'rendering', @model
