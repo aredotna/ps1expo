@@ -10,10 +10,8 @@ module.exports = class PlayerItemView extends View
 
     @listenTo @model, 'show:video', @displayVideo
 
-  displayVideo: -> 
-    # @$('.video').html @model.get('embed').html
-    if @model.isYouTube()
-      @displayYouTube()
+  displayVideo: ->
+    @displayYouTube() if @model.isYouTube()
 
   displayYouTube: ->
     console.log 'displayYouTube'
