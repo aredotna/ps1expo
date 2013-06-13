@@ -49,15 +49,16 @@ module.exports = class PlayerView extends View
       playerVars:
         showinfo: 0
         controls: 0
-      events: 
+      events:
         onReady: @playYoutube
         onStateChange: @onYouTubeStateChange
 
-  playYoutube: (e)-> e.target.playVideo()
+  playYoutube: (e)->
+    e.target.playVideo()
+    e.target.addEventListener "onStateChange"
 
   onYouTubeStateChange: (e) =>
-    if e.data is YT.PlayerState.ENDED
-      @nextVideo()
+    @nextVideo() if e.data is YT.PlayerState.ENDED
 
   displayVimeoPlayer: (block)->
     console.log 'displayVimeoPlayer', block.vimeoEmbed()
@@ -67,12 +68,12 @@ module.exports = class PlayerView extends View
     $(iframe).attr('id', "vimeo-#{block.id}")
     @v_player = $f(iframe)
     @v_player.addEvent 'ready', @setUpVimeo
-  
+
   setUpVimeo: =>
     @playVimeo()
     @v_player.addEvent 'finish', @nextVideo
 
-  playVimeo: => 
+  playVimeo: =>
     @v_player.api('play')
 
   destroyPlayers: ->
